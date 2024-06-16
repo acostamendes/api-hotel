@@ -26,6 +26,13 @@ hoteis = [
         'estrelas': 3.9,
         'diaria': 320.20,
         'cidade': 'Santa Catarina'
+    },
+    {
+        'hotel_id': 'alvorada',
+        'nome': 'Alvorada Hotel',
+        'estrelas': 3.5,
+        'diaria': 300.20,
+        'cidade': 'Santa Catarina'
     }
 ]
 
