@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_restful import Api, Resource, reqparse
+from models.hotel import HotelModel
 
 app = Flask(__name__)
 api = Api(app)
@@ -65,14 +66,20 @@ class Hotel(Resource):
         if Hotel.find_hotel(hotel_id):
             return {"message": "Hotel id '{}' already exists.".format(hotel_id)}, 400
 
-        novo_hotel = { 'hotel_id': hotel_id, **dados }
+        hotel_objeto = HotelModel(hotel_id, **dados) #objeto
+        novo_hotel = hotel_objeto.json()
 
-        hoteis.append(novo_hotel)
+        # novo_hotel = { 'hotel_id': hotel_id, **dados }
+
+        hoteis.append(novo_hotel)   
         return novo_hotel, 201
 
     def put(self, hotel_id):
         dados = Hotel.argumentos.parse_args()
-        novo_hotel = { 'hotel_id': hotel_id, **dados }
+        hotel_objeto = HotelModel(hotel_id, **dados) #objeto
+        novo_hotel = hotel_objeto.json()
+        
+        #novo_hotel = { 'hotel_id': hotel_id, **dados }
 
         hotel = Hotel.find_hotel(hotel_id)
         if hotel:
