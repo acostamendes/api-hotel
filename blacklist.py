@@ -1,0 +1,1 @@
+BLACKLIST = set() # set = valor unico
