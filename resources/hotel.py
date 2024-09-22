@@ -39,11 +39,37 @@ hoteis = [
     }
 ]
 
+def normalize_path_params(cidade=None,
+                          estrelas_min = 0,
+                          estrelas_max = 5,
+                          diaria_min = 0,
+                          diaria_max= 10000,
+                          limit = 50,
+                          offset = 0, **dados):
+    if cidade:
+        return{
+            'estrelas_min' : estrelas_min,
+            'estrelas_max' : estrelas_max,
+            'diaria_min': diaria_min,
+            'diaria_max': diaria_max,
+            'cidade': cidade,
+            'limit' : limit,
+            'offset': offset
+        }
+    return{
+            'estrelas_min' : estrelas_min,
+            'estrelas_max' : estrelas_max,
+            'diaria_min': diaria_min,
+            'diaria_max': diaria_max,
+            'limit' : limit,
+            'offset': offset
+        }
+
 
 # path /hoteis?cidade= Rio de Janeiro&estrelmas_min=4&diaria_max=400
 
 path_params = reqparse.RequestParser()
-path_params.add_argument('cidadade', type=str)
+path_params.add_argument('cidade', type=str)
 path_params.add_argument('estrelas_min', type=float)
 path_params.add_argument('estrelas_max', type=float)
 path_params.add_argument('diaria_min', type=float)
@@ -54,10 +80,62 @@ path_params.add_argument('offset', type=float)
 
 class Hoteis(Resource):
     def get(self):
+        connection = sqlite3.connect('instance/banco.db')
+        cursor = connection.cursor()
 
         dados = path_params.parse_args()
-        dados.valid= {chave:dados[chave] for chave in dados if dados [chave] is not None }
-        return {'hoteis': [hotel.json() for hotel in HotelModel.query.all()]} #SELECT * FROM hoteis 
+        dados_valid= {chave:dados[chave] for chave in dados if dados [chave] is not None }
+        parametrs = normalize_path_params(**dados_valid)
+
+        if not parametrs.get('cidade'):
+            consulta = """
+            SELECT * FROM hoteis 
+            WHERE (estrelas >= ? and estrelas <= ?) 
+            AND (diaria >= ? and diaria <= ?) 
+            LIMIT ? OFFSET ?
+        """
+            # A tupla deve conter os parâmetros de acordo com os "placeholders" da consulta
+            tupla = (
+                parametrs['estrelas_min'], 
+                parametrs['estrelas_max'], 
+                parametrs['diaria_min'], 
+                parametrs['diaria_max'], 
+                parametrs['limit'], 
+                parametrs['offset']
+            )
+            resultado = cursor.execute(consulta, tupla)
+        else:
+            consulta = """
+                SELECT * FROM hoteis 
+                WHERE (estrelas >= ? and estrelas <= ?) 
+                AND (diaria >= ? and diaria <= ?) 
+                AND cidade = ? 
+                LIMIT ? OFFSET ?
+            """
+            # Aqui, adicionamos o parâmetro 'cidade' na posição correta
+            tupla = (
+                parametrs['estrelas_min'], 
+                parametrs['estrelas_max'], 
+                parametrs['diaria_min'], 
+                parametrs['diaria_max'], 
+                parametrs['cidade'], 
+                parametrs['limit'], 
+                parametrs['offset']
+            )
+            resultado = cursor.execute(consulta, tupla)
+
+        hoteis = []
+        for linha in resultado:
+            hoteis.append({
+            'hotel_id': linha[0],
+            'nome': linha[1],
+            'estrelas': linha[2],
+            'diaria': linha[3],
+            'cidade':linha[4]
+            })
+
+        return {'hoteis': hoteis}
+       # return {'hoteis': [hotel.json() for hotel in HotelModel.query.all()]} #SELECT * FROM hoteis 
 
 class Hotel(Resource):
     argumentos = reqparse.RequestParser()
