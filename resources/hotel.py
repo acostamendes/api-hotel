@@ -74,14 +74,6 @@ class Hoteis(Resource):
             tupla = tuple([parametrs [chave] for chave in parametrs])
             resultado = cursor.execute(consulta_sem_cidade, tupla)
         else:
-           # tupla = (
-            #    parametrs['estrelas_min'], 
-            #    parametrs['estrelas_max'], 
-            #    parametrs['diaria_min'], 
-            #    parametrs['diaria_max'], 
-            #    parametrs['limit'], 
-            #    parametrs['offset']
-            #)
             tupla = tuple([parametrs [chave] for chave in parametrs])
             resultado = cursor.execute(consulta_com_cidade, tupla)
 
@@ -92,7 +84,8 @@ class Hoteis(Resource):
             'nome': linha[1],
             'estrelas': linha[2],
             'diaria': linha[3],
-            'cidade':linha[4]
+            'cidade':linha[4],
+            'site_id':linha[5]
             })
 
         return {'hoteis': hoteis}
@@ -102,8 +95,9 @@ class Hotel(Resource):
     argumentos = reqparse.RequestParser()
     argumentos.add_argument('nome', type=str, required=True, help="The filed 'nome' cannot be left blank.")
     argumentos.add_argument('estrelas', type=float, required=True, help="The filed 'estrelas' cannot be left blank.")
-    argumentos.add_argument('diaria')
+    argumentos.add_argument('diaria', type=float)
     argumentos.add_argument('cidade',type=str, required=True, help="The filed 'cidade' cannot be left blank.")
+    argumentos.add_argument('site_id', type=int, required=True, help="Every hotel needs to be linked with a site.")
 
     def get(self, hotel_id):
         hotel = HotelModel.find_hotel(hotel_id)
