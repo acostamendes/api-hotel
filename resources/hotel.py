@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_restful import Api, Resource, reqparse
 from models.hotel import HotelModel
+from resources.filter import normalize_path_params, consulta_com_cidade, consulta_sem_cidade
 from flask_jwt_extended import jwt_required
 import sqlite3
 
@@ -39,32 +40,6 @@ hoteis = [
     }
 ]
 
-def normalize_path_params(cidade=None,
-                          estrelas_min = 0,
-                          estrelas_max = 5,
-                          diaria_min = 0,
-                          diaria_max= 10000,
-                          limit = 50,
-                          offset = 0, **dados):
-    if cidade:
-        return{
-            'estrelas_min' : estrelas_min,
-            'estrelas_max' : estrelas_max,
-            'diaria_min': diaria_min,
-            'diaria_max': diaria_max,
-            'cidade': cidade,
-            'limit' : limit,
-            'offset': offset
-        }
-    return{
-            'estrelas_min' : estrelas_min,
-            'estrelas_max' : estrelas_max,
-            'diaria_min': diaria_min,
-            'diaria_max': diaria_max,
-            'limit' : limit,
-            'offset': offset
-        }
-
 
 # path /hoteis?cidade= Rio de Janeiro&estrelmas_min=4&diaria_max=400
 
@@ -88,41 +63,27 @@ class Hoteis(Resource):
         parametrs = normalize_path_params(**dados_valid)
 
         if not parametrs.get('cidade'):
-            consulta = """
-            SELECT * FROM hoteis 
-            WHERE (estrelas >= ? and estrelas <= ?) 
-            AND (diaria >= ? and diaria <= ?) 
-            LIMIT ? OFFSET ?
-        """
-            # A tupla deve conter os parâmetros de acordo com os "placeholders" da consulta
-            tupla = (
-                parametrs['estrelas_min'], 
-                parametrs['estrelas_max'], 
-                parametrs['diaria_min'], 
-                parametrs['diaria_max'], 
-                parametrs['limit'], 
-                parametrs['offset']
-            )
-            resultado = cursor.execute(consulta, tupla)
+           # tupla = (
+            #    parametrs['estrelas_min'], 
+            #    parametrs['estrelas_max'], 
+            #    parametrs['diaria_min'], 
+            #    parametrs['diaria_max'], 
+            #    parametrs['limit'], 
+            #    parametrs['offset']
+            #)
+            tupla = tuple([parametrs [chave] for chave in parametrs])
+            resultado = cursor.execute(consulta_sem_cidade, tupla)
         else:
-            consulta = """
-                SELECT * FROM hoteis 
-                WHERE (estrelas >= ? and estrelas <= ?) 
-                AND (diaria >= ? and diaria <= ?) 
-                AND cidade = ? 
-                LIMIT ? OFFSET ?
-            """
-            # Aqui, adicionamos o parâmetro 'cidade' na posição correta
-            tupla = (
-                parametrs['estrelas_min'], 
-                parametrs['estrelas_max'], 
-                parametrs['diaria_min'], 
-                parametrs['diaria_max'], 
-                parametrs['cidade'], 
-                parametrs['limit'], 
-                parametrs['offset']
-            )
-            resultado = cursor.execute(consulta, tupla)
+           # tupla = (
+            #    parametrs['estrelas_min'], 
+            #    parametrs['estrelas_max'], 
+            #    parametrs['diaria_min'], 
+            #    parametrs['diaria_max'], 
+            #    parametrs['limit'], 
+            #    parametrs['offset']
+            #)
+            tupla = tuple([parametrs [chave] for chave in parametrs])
+            resultado = cursor.execute(consulta_com_cidade, tupla)
 
         hoteis = []
         for linha in resultado:
