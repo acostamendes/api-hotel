@@ -4,7 +4,7 @@ from sql_alchemy import banco
 from resources.hotel import Hoteis, Hotel
 from resources.user import User, UserRegister, UserLogin, UserLogout
 from resources.site import Site, Sites
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import JWTManager # type: ignore
 from blacklist import BLACKLIST
 import os
 
