@@ -55,4 +55,4 @@ if __name__ == '__main__':
 # http://127.0.0.1:500/hoteis
 
 # ativar ambiente virtual windows '.\ambvir\Scripts\Activate'
-# subir a aplicação 'python3 app.py'
+# subir a aplicação 'python app.py'
