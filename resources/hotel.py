@@ -9,38 +9,6 @@ import sqlite3
 app = Flask(__name__)
 api = Api(app)
 
-# Lista de hotéis
-hoteis = [
-    {
-        'hotel_id': 'alpha',
-        'nome': 'Alpha Hotel',
-        'estrelas': 4.3,
-        'diaria': 420.34,
-        'cidade': 'Rio de Janeiro'
-    },
-    {
-        'hotel_id': 'bravo',
-        'nome': 'Bravo Hotel',
-        'estrelas': 4.4,
-        'diaria': 380.90,
-        'cidade': 'Santa Catarina'
-    },
-    {
-        'hotel_id': 'charlie',
-        'nome': 'Charlie Hotel',
-        'estrelas': 3.9,
-        'diaria': 320.20,
-        'cidade': 'Santa Catarina'
-    },
-    {
-        'hotel_id': 'alvorada',
-        'nome': 'Alvorada Hotel',
-        'estrelas': 3.5,
-        'diaria': 300.20,
-        'cidade': 'Santa Catarina'
-    }
-]
-
 
 # path /hoteis?cidade= Rio de Janeiro&estrelmas_min=4&diaria_max=400
 
@@ -94,11 +62,12 @@ class Hoteis(Resource):
 
 class Hotel(Resource):
     argumentos = reqparse.RequestParser()
-    argumentos.add_argument('nome', type=str, required=True, help="The filed 'nome' cannot be left blank.")
-    argumentos.add_argument('estrelas', type=float, required=True, help="The filed 'estrelas' cannot be left blank.")
-    argumentos.add_argument('diaria', type=float)
-    argumentos.add_argument('cidade',type=str, required=True, help="The filed 'cidade' cannot be left blank.")
-    argumentos.add_argument('site_id', type=int, required=True, help="Every hotel needs to be linked with a site.")
+    argumentos.add_argument('nome', type=str, required=True, help="The field 'nome' cannot be left blank.", location='json')
+    argumentos.add_argument('estrelas', type=float, required=True, help="The field 'estrelas' cannot be left blank.", location='json')
+    argumentos.add_argument('diaria', type=float, location='json')
+    argumentos.add_argument('cidade', type=str, required=True, help="The field 'cidade' cannot be left blank.", location='json')
+    argumentos.add_argument('site_id', type=int, required=True, help="Every hotel needs to be linked with a site.", location='json')
+
 
     def get(self, hotel_id):
         hotel = HotelModel.find_hotel(hotel_id)
