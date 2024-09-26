@@ -25,11 +25,22 @@ class SiteModel(banco.Model):
         if site:
             return site
         return None
+    
+    @classmethod
+    def find_by_id(cls, site_id):  # (cls) palavra-chave para a classe
+        site= cls.query.filter_by(site_id=site_id).first()  # SELECT * FROM site WHERE url= $url LIMIT 1
+        if site:
+            return site
+        return None
+
 
     def save_site(self):
         banco.session.add(self)
         banco.session.commit()
 
     def delete_site(self):
+        #deletando todos os hoteis associados ao site
+        [hotel.delete_hotel() for hotel in self.hoteis] #lista comprehension
+        #deletando site
         banco.session.delete(self)
         banco.session.commit()
