@@ -7,6 +7,7 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt
 argumentos = reqparse.RequestParser()
 argumentos.add_argument('login',  type=str, required=True, help="The filed 'login' cannot be left blank.")
 argumentos.add_argument('senha', type=str, required=True, help="The find 'senha' cannot be left blank." )
+argumentos.add_argument('ativado', type= bool)
 
 class User(Resource):
     #/usuarios/{user_id}
@@ -36,7 +37,8 @@ class UserRegister(Resource):
         if UserModel.find_by_login(dados ['login']):
             return {"message": "The login '{}' already exists.".format(dados['login'])}
         
-        user = UserModel(**dados) #(dados['login'], dados['senha']) #instanciando um novo objeto 
+        user = UserModel(**dados) #(dados['login'], dados['senha'], dados['ativado']) #instanciando um novo objeto 
+        user.ativado = False
         user.save_user()
         return{'message':'User created sucessfully!'},201 #created
     
@@ -49,8 +51,10 @@ class UserLogin(Resource):
         user = UserModel.find_by_login(dados['login'])
 
         if user and user.senha == dados['senha']:
-            token_de_acesso = create_access_token(identity=user.user_id)
-            return {'access_token': token_de_acesso}, 200
+            if user.ativado:
+                token_de_acesso = create_access_token(identity=user.user_id)
+                return {'access_token': token_de_acesso}, 200
+            return {'message':'User not confirmed.'},400
         return {'message': 'The username or password is incorrect.'}, 401
 
 class UserLogout(Resource):
@@ -61,6 +65,17 @@ class UserLogout(Resource):
         BLACKLIST.add(jwt_id)
         return {'message':'logged out sucessfully'},200
     
+class UserConfirm(Resource):
+    # /confimacao/{user_id}
+    @classmethod
+    def get(cls,user_id):
+        user = UserModel.find_user(user_id)
 
+        if not user:
+            return{"message":"User id'{}' not found.".format(user_id)}, 404
+
+        user.ativado = True
+        user.save_user()
+        return {"message": "User id '{}' confirmed sucessfully.". format(user_id)}, 200
 
     
